@@ -9,7 +9,7 @@ load_dotenv(dotenv_path=_env_path)
 
 
 class Settings:
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./novelgen.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://readgen:password@localhost:5432/readgen")
     AI_PROVIDER: str = os.getenv("AI_PROVIDER", "openai")
     AI_API_KEY: Optional[str] = os.getenv("AI_API_KEY")
     AI_MODEL: str = os.getenv("AI_MODEL", "gpt-4")

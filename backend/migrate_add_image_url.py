@@ -16,10 +16,13 @@ def add_image_url_column():
     db = SessionLocal()
     try:
         # Check if column already exists
-        result = db.execute(text("PRAGMA table_info(posts)"))
-        columns = [row[1] for row in result.fetchall()]
-        
-        if "image_url" in columns:
+        result = db.execute(text(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name='posts' AND column_name='image_url'"
+        ))
+        exists = result.fetchone() is not None
+
+        if exists:
             print("✓ image_url column already exists in posts table")
             return
         

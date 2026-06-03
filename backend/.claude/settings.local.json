@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(gh auth *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(brew install *)",
+      "Bash(gh repo *)"
     ]
   }
 }

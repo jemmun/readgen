@@ -35,11 +35,11 @@ import os
 
 Base.metadata.create_all(bind=engine)
 
-# Lightweight startup migration: add columns/tables if missing
+# Lightweight startup migration: add columns/tables if missing (PostgreSQL)
 def _run_migrations():
     with engine.connect() as conn:
         try:
-            conn.execute(text("ALTER TABLE novels ADD COLUMN is_published BOOLEAN DEFAULT 0"))
+            conn.execute(text("ALTER TABLE novels ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT FALSE"))
             conn.commit()
             print("Migration applied: added is_published column to novels")
         except Exception:
@@ -47,12 +47,12 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS qr_tokens (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     token VARCHAR(64) UNIQUE NOT NULL,
                     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                     status VARCHAR(20) DEFAULT 'pending',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    expires_at TIMESTAMP NOT NULL
+                    created_at TIMESTAMPTZ DEFAULT NOW(),
+                    expires_at TIMESTAMPTZ NOT NULL
                 )
             '''))
             conn.commit()
@@ -60,43 +60,43 @@ def _run_migrations():
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE users ADD COLUMN oauth_provider VARCHAR(20)"))
+            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider VARCHAR(20)"))
             conn.commit()
             print("Migration applied: added oauth_provider column to users")
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE users ADD COLUMN oauth_id VARCHAR(100)"))
+            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_id VARCHAR(100)"))
             conn.commit()
             print("Migration applied: added oauth_id column to users")
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE illustrations ADD COLUMN description TEXT"))
+            conn.execute(text("ALTER TABLE illustrations ADD COLUMN IF NOT EXISTS description TEXT"))
             conn.commit()
             print("Migration applied: added description column to illustrations")
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE illustrations ADD COLUMN tags VARCHAR(500)"))
+            conn.execute(text("ALTER TABLE illustrations ADD COLUMN IF NOT EXISTS tags VARCHAR(500)"))
             conn.commit()
             print("Migration applied: added tags column to illustrations")
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE illustrations ADD COLUMN novel_id INTEGER REFERENCES novels(id)"))
+            conn.execute(text("ALTER TABLE illustrations ADD COLUMN IF NOT EXISTS novel_id INTEGER REFERENCES novels(id)"))
             conn.commit()
             print("Migration applied: added novel_id column to illustrations")
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE illustrations ADD COLUMN illustration_type VARCHAR(50) DEFAULT 'illustration'"))
+            conn.execute(text("ALTER TABLE illustrations ADD COLUMN IF NOT EXISTS illustration_type VARCHAR(50) DEFAULT 'illustration'"))
             conn.commit()
             print("Migration applied: added illustration_type column to illustrations")
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE novels ADD COLUMN cover_image_url VARCHAR(500)"))
+            conn.execute(text("ALTER TABLE novels ADD COLUMN IF NOT EXISTS cover_image_url VARCHAR(500)"))
             conn.commit()
             print("Migration applied: added cover_image_url column to novels")
         except Exception:
@@ -104,10 +104,10 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS bookmarks (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
                     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_at TIMESTAMPTZ DEFAULT NOW(),
                     CONSTRAINT uq_bookmark UNIQUE(post_id, user_id)
                 )
             '''))
@@ -118,14 +118,14 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS reading_progress (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                     novel_id INTEGER REFERENCES novels(id) ON DELETE CASCADE,
                     chapter_id INTEGER REFERENCES chapters(id) ON DELETE SET NULL,
                     scroll_position INTEGER DEFAULT 0,
                     note TEXT,
-                    updated_at TIMESTAMP,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMPTZ,
+                    created_at TIMESTAMPTZ DEFAULT NOW(),
                     CONSTRAINT uq_reading_progress UNIQUE(user_id, novel_id)
                 )
             '''))
@@ -136,15 +136,15 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS notifications (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                     actor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
                     type VARCHAR(50) NOT NULL,
                     post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
                     group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE,
                     message TEXT,
-                    is_read BOOLEAN DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    is_read BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMPTZ DEFAULT NOW()
                 )
             '''))
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_notifications_user_id ON notifications(user_id)"))
@@ -153,13 +153,13 @@ def _run_migrations():
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE comments ADD COLUMN parent_id INTEGER REFERENCES comments(id) ON DELETE CASCADE"))
+            conn.execute(text("ALTER TABLE comments ADD COLUMN IF NOT EXISTS parent_id INTEGER REFERENCES comments(id) ON DELETE CASCADE"))
             conn.commit()
             print("Migration applied: added parent_id column to comments")
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE groups ADD COLUMN invite_code VARCHAR(64)"))
+            conn.execute(text("ALTER TABLE groups ADD COLUMN IF NOT EXISTS invite_code VARCHAR(64)"))
             conn.commit()
             print("Migration applied: added invite_code column to groups")
         except Exception:
@@ -167,12 +167,12 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                     receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                     content TEXT NOT NULL,
-                    is_read INTEGER DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    is_read BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMPTZ DEFAULT NOW()
                 )
             '''))
             conn.commit()
@@ -180,48 +180,48 @@ def _run_migrations():
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE posts ADD COLUMN approval_note TEXT"))
+            conn.execute(text("ALTER TABLE posts ADD COLUMN IF NOT EXISTS approval_note TEXT"))
             conn.commit()
             print("Migration applied: added approval_note column to posts")
         except Exception:
             pass
         # Multi-image support for posts
         try:
-            conn.execute(text("ALTER TABLE posts ADD COLUMN image_urls TEXT"))
+            conn.execute(text("ALTER TABLE posts ADD COLUMN IF NOT EXISTS image_urls TEXT"))
             conn.commit()
             print("Migration applied: added image_urls column to posts")
         except Exception:
             pass
         # A-P1: illustration chapter_id
         try:
-            conn.execute(text("ALTER TABLE illustrations ADD COLUMN chapter_id INTEGER REFERENCES chapters(id)"))
+            conn.execute(text("ALTER TABLE illustrations ADD COLUMN IF NOT EXISTS chapter_id INTEGER REFERENCES chapters(id)"))
             conn.commit()
             print("Migration applied: added chapter_id column to illustrations")
         except Exception:
             pass
         # A-P3: illustration style_seed
         try:
-            conn.execute(text("ALTER TABLE illustrations ADD COLUMN style_seed VARCHAR(100)"))
+            conn.execute(text("ALTER TABLE illustrations ADD COLUMN IF NOT EXISTS style_seed VARCHAR(100)"))
             conn.commit()
             print("Migration applied: added style_seed column to illustrations")
         except Exception:
             pass
         # D-P3: message image_url
         try:
-            conn.execute(text("ALTER TABLE messages ADD COLUMN image_url VARCHAR(500)"))
+            conn.execute(text("ALTER TABLE messages ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)"))
             conn.commit()
             print("Migration applied: added image_url column to messages")
         except Exception:
             pass
         # E-P4/E-P5: group invite_code and announcement
         try:
-            conn.execute(text("ALTER TABLE groups ADD COLUMN announcement TEXT"))
+            conn.execute(text("ALTER TABLE groups ADD COLUMN IF NOT EXISTS announcement TEXT"))
             conn.commit()
             print("Migration applied: added announcement column to groups")
         except Exception:
             pass
         try:
-            conn.execute(text("ALTER TABLE groups ADD COLUMN invite_code VARCHAR(50) UNIQUE"))
+            conn.execute(text("ALTER TABLE groups ADD COLUMN IF NOT EXISTS invite_code VARCHAR(50) UNIQUE"))
             conn.commit()
             print("Migration applied: added invite_code column to groups")
         except Exception:
@@ -230,13 +230,13 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS novel_reviews (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     novel_id INTEGER REFERENCES novels(id) ON DELETE CASCADE NOT NULL,
                     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
                     rating INTEGER NOT NULL,
                     review_text TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP,
+                    created_at TIMESTAMPTZ DEFAULT NOW(),
+                    updated_at TIMESTAMPTZ,
                     CONSTRAINT uq_novel_review UNIQUE(novel_id, user_id)
                 )
             '''))
@@ -248,7 +248,7 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS novel_tags (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     novel_id INTEGER REFERENCES novels(id) ON DELETE CASCADE NOT NULL,
                     tag VARCHAR(50) NOT NULL
                 )
@@ -262,13 +262,13 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS reports (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     reporter_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
                     target_type VARCHAR(20) NOT NULL,
                     target_id INTEGER NOT NULL,
                     reason TEXT,
                     status VARCHAR(20) DEFAULT 'pending',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    created_at TIMESTAMPTZ DEFAULT NOW()
                 )
             '''))
             conn.commit()
@@ -279,12 +279,12 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS feedback (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
                     category VARCHAR(50) NOT NULL,
                     content TEXT NOT NULL,
                     status VARCHAR(20) DEFAULT 'open',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    created_at TIMESTAMPTZ DEFAULT NOW()
                 )
             '''))
             conn.commit()
@@ -295,7 +295,7 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS achievements (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     key VARCHAR(100) UNIQUE NOT NULL,
                     name VARCHAR(200) NOT NULL,
                     description TEXT NOT NULL,
@@ -303,7 +303,7 @@ def _run_migrations():
                     category VARCHAR(50) NOT NULL,
                     requirement_type VARCHAR(50) NOT NULL,
                     requirement_value INTEGER NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    created_at TIMESTAMPTZ DEFAULT NOW()
                 )
             '''))
             conn.commit()
@@ -313,13 +313,13 @@ def _run_migrations():
         try:
             conn.execute(text('''
                 CREATE TABLE IF NOT EXISTS user_achievements (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
                     achievement_id INTEGER REFERENCES achievements(id) ON DELETE CASCADE NOT NULL,
                     progress INTEGER DEFAULT 0,
-                    is_unlocked BOOLEAN DEFAULT 0,
-                    unlocked_at TIMESTAMP,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    is_unlocked BOOLEAN DEFAULT FALSE,
+                    unlocked_at TIMESTAMPTZ,
+                    created_at TIMESTAMPTZ DEFAULT NOW(),
                     CONSTRAINT uq_user_achievement UNIQUE(user_id, achievement_id)
                 )
             '''))

@@ -126,8 +126,8 @@ esac
 
 echo ""
 echo -e "  ┌────────────────────────────────────────────┐"
-echo -e "  │  前端:  ${GREEN}http://localhost:${FRONTEND_PORT}${NC}"
-echo -e "  │  API:   ${GREEN}http://localhost:${FRONTEND_PORT}/api/${NC}"
-echo -e "  │  Swagger: ${GREEN}http://localhost:${FRONTEND_PORT}/api/docs${NC}"
-echo -e "  │  健康:  ${GREEN}http://localhost:${FRONTEND_PORT}/api/health${NC}"
+echo -e "  │  前端:     ${GREEN}http://localhost:${FRONTEND_PORT}${NC}"
+echo -e "  │  API:      ${GREEN}http://localhost:${FRONTEND_PORT}/api/${NC}"
+echo -e "  │  Swagger:  ${GREEN}http://localhost:${FRONTEND_PORT}/api/docs${NC}"
+echo -e "  │  健康:     ${GREEN}http://localhost:${FRONTEND_PORT}/api/health${NC}"
 echo -e "  └────────────────────────────────────────────┘"

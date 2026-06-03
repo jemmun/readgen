@@ -13,8 +13,10 @@ def migrate():
     db = SessionLocal()
     try:
         # Posts columns
-        result = db.execute(text("PRAGMA table_info(posts)"))
-        columns = [row[1] for row in result.fetchall()]
+        result = db.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name='posts'"
+        ))
+        columns = [row[0] for row in result.fetchall()]
 
         for col, col_type in [
             ("allow_comments", "BOOLEAN DEFAULT 1"),
@@ -29,8 +31,10 @@ def migrate():
                 print(f"  ✓ Added {col} to posts")
 
         # Comments column
-        result = db.execute(text("PRAGMA table_info(comments)"))
-        comment_cols = [row[1] for row in result.fetchall()]
+        result = db.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name='comments'"
+        ))
+        comment_cols = [row[0] for row in result.fetchall()]
         if "tag" in comment_cols:
             print("  ✓ tag already exists in comments")
         else:

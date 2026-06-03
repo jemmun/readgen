@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Image, TextInput, Modal, Share, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, RefreshControl, Image, TextInput, Modal, Share, ScrollView, Platform } from 'react-native';
 import { Text, Avatar, FAB, ActivityIndicator, IconButton } from 'react-native-paper';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -139,19 +139,21 @@ export default function IdeasScreen({ navigation }: Props) {
           )}
         </View>
       ) : (
-        <FlatList
-          data={posts}
-          renderItem={({ item }) => (
-            <PostItem
-              post={item}
-              navigation={navigation}
-              onPostUpdate={handlePostUpdate}
-            />
-          )}
-          keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={() => <View style={styles.postSeparator} />}
+        <ScrollView
+          style={styles.flatList}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        />
+        >
+          {posts.map((item) => (
+            <React.Fragment key={item.id.toString()}>
+              <PostItem
+                post={item}
+                navigation={navigation}
+                onPostUpdate={handlePostUpdate}
+              />
+              <View style={styles.postSeparator} />
+            </React.Fragment>
+          ))}
+        </ScrollView>
       )}
       <FAB
         icon="plus"
@@ -416,19 +418,21 @@ function PostItem({
             {post.content}
           </Text>
           {/* Multi-image display */}
-          {post.image_urls && post.image_urls.length > 0 ? (
+          {Array.isArray(post.image_urls) && post.image_urls.length > 0 ? (
             <View style={styles.postImageGrid}>
-              {post.image_urls.slice(0, 4).map((url: string, idx: number) => (
-                <Image
-                  key={idx}
-                  source={{ uri: url.startsWith('http') ? url : `http://localhost:8000${url}` }}
-                  style={[
-                    styles.postGridImage,
-                    post.image_urls!.length === 1 && styles.postGridImageSingle,
-                    post.image_urls!.length === 2 && styles.postGridImageDouble,
-                  ]}
-                  resizeMode="cover"
-                />
+              {post.image_urls.slice(0, 4).map((url, idx) => (
+                url ? (
+                  <Image
+                    key={idx}
+                    source={{ uri: String(url).startsWith('http') ? String(url) : `http://localhost:8000${url}` }}
+                    style={[
+                      styles.postGridImage,
+                      post.image_urls!.length === 1 && styles.postGridImageSingle,
+                      post.image_urls!.length === 2 && styles.postGridImageDouble,
+                    ]}
+                    resizeMode="cover"
+                  />
+                ) : null
               ))}
               {post.image_urls.length > 4 && (
                 <View style={[styles.postGridImage, styles.postGridImageOverlay]}>
@@ -437,7 +441,7 @@ function PostItem({
               )}
             </View>
           ) : post.image_url ? (
-            <Image source={{ uri: post.image_url }} style={styles.postImage} resizeMode="cover" />
+            <Image source={{ uri: String(post.image_url) }} style={styles.postImage} resizeMode="cover" />
           ) : null}
         </TouchableOpacity>
 
@@ -750,6 +754,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  flatList: {
+    flex: 1,
   },
   // Weibo-style Tab Bar — polished
   tabBar: {

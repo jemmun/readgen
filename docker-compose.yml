@@ -1,14 +1,35 @@
-version: "3.8"
-
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: readgen-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: readgen
+      POSTGRES_USER: readgen
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U readgen -d readgen"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   backend:
     build: ./backend
     container_name: readgen-backend
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://readgen:${DB_PASSWORD:-password}@db:5432/readgen
     env_file:
       - ./backend/.env
     volumes:
-      - readgen_data:/app
       - ./backend/uploads:/app/uploads
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
@@ -28,4 +49,4 @@ services:
         condition: service_healthy
 
 volumes:
-  readgen_data:
+  pgdata:

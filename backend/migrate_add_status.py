@@ -12,8 +12,10 @@ from sqlalchemy import text
 def add_status_column():
     db = SessionLocal()
     try:
-        result = db.execute(text("PRAGMA table_info(posts)"))
-        columns = [row[1] for row in result.fetchall()]
+        result = db.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name='posts'"
+        ))
+        columns = [row[0] for row in result.fetchall()]
         
         if "status" in columns:
             print("✓ status column already exists in posts table")
