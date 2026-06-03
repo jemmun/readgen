@@ -10,7 +10,7 @@ from app.models.novel import Novel
 from app.models.user import User
 from app.models.like import Like
 from app.schemas.post import PostCreate, PostInDB, PostAuthor, PostUpdate
-from app.schemas.novel import NovelInDB
+from app.schemas.novel import NovelInDB, VALID_GENRES
 from app.core.security import get_current_user, get_current_user_required
 from app.core.tags import parse_message
 from app.services import generation_service, novel_service
@@ -364,12 +364,23 @@ async def generate_novel_from_post(
         raise HTTPException(status_code=400, detail="Novel already generated from this post")
     
     design = await generation_service.extract_novel_design_from_post(post.content)
-    
+
+    # Normalize AI-generated genre to a valid one
+    raw_genre = design.get("genre", "").lower().strip()
+    GENRE_ALIASES = {
+        "mystery": "detective", "thriller": "detective", "horror": "supernatural",
+        "adventure": "fantasy", "comedy": "urban", "drama": "romance",
+        "action": "wuxia", "sci-fi": "scifi", "science fiction": "scifi",
+        "science_fiction": "scifi", "slice_of_life": "urban", "tragedy": "romance",
+        "dark_fantasy": "fantasy", "light_novel": "urban", "isekai": "xuanhuan",
+    }
+    genre = raw_genre if raw_genre in VALID_GENRES else GENRE_ALIASES.get(raw_genre, "fantasy")
+
     novel = Novel(
         user_id=current_user.id,
         title=design.get("title", "Untitled Novel"),
         theme_description=design.get("theme_description", post.content),
-        genre=design.get("genre"),
+        genre=genre,
         style=design.get("style"),
         tone=design.get("tone"),
         setting=design.get("setting"),

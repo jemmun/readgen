@@ -13,7 +13,10 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "EXPO_PUBLIC_API_URL": "http://8.152.196.197/api/"
+        }
       },
       "ios": {
         "simulator": false

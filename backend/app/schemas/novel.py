@@ -15,6 +15,7 @@ VALID_GENRES = [
 
 
 class NovelBase(BaseModel):
+    """Shared fields for input & output — no validation (DB may contain legacy data)."""
     title: str
     theme_description: str
     genre: Optional[str] = None
@@ -26,6 +27,9 @@ class NovelBase(BaseModel):
     language: Optional[str] = "en"
     max_chapters: int = 20
 
+
+class NovelCreate(NovelBase):
+    """Create schema — validates genre."""
     @field_validator('genre')
     @classmethod
     def validate_genre(cls, v):
@@ -34,11 +38,8 @@ class NovelBase(BaseModel):
         return v
 
 
-class NovelCreate(NovelBase):
-    pass
-
-
 class NovelUpdate(BaseModel):
+    """Update schema — validates genre."""
     title: Optional[str] = None
     theme_description: Optional[str] = None
     genre: Optional[str] = None
@@ -62,6 +63,7 @@ class NovelUpdate(BaseModel):
 
 
 class NovelInDB(NovelBase):
+    """Response schema — no validation (read-only)."""
     id: int
     total_word_count: int
     status: str
