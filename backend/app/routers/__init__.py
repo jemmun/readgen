@@ -1,0 +1,13 @@
+from .novels import router as novels_router
+from .chapters import router as chapters_router
+from .generation import router as generation_router
+from .auth import router as auth_router
+from .posts import router as posts_router
+from .comments import router as comments_router
+from .follows import router as follows_router
+from .likes import router as likes_router
+from .users import router as users_router
+from .groups import router as groups_router
+from .illustrations import router as illustrations_router
+from .exports import router as exports_router
+from .achievements import router as achievements_router

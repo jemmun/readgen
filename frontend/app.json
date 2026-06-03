@@ -1,0 +1,69 @@
+{
+  "expo": {
+    "name": "Novel Generator",
+    "slug": "novel-generator",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.readgen.novelgenerator",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs camera access to scan QR codes for login",
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access to upload images for posts",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "associatedDomains": [
+        "applinks:readgen.app",
+        "applinks:readgen.app"
+      ]
+    },
+    "android": {
+      "package": "com.readgen.novelgenerator",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "novelgen",
+              "host": "login"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Novel Generator to access your camera for QR code scanning."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3f1b5b56-21cd-4eba-aa89-cef994052166"
+      }
+    }
+  }
+}

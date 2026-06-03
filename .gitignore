@@ -1,0 +1,47 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Secrets & environment
+.env
+*.key
+*_key.md
+deepseek_key.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+dist/
+
+# Node
+node_modules/
+.expo/
+*.log
+npm-debug.log*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads / user content
+uploads/*
+!uploads/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.qoder/
+
+# Docker
+.docker/
+
+# Build outputs
+*.apk
+*.aab
+*.ipa
