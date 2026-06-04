@@ -258,6 +258,32 @@ def _run_migrations():
             print("Migration applied: created novel_tags table")
         except Exception:
             pass
+        # Fix: widen novel metadata columns for AI-generated content
+        try:
+            conn.execute(text("ALTER TABLE novels ALTER COLUMN style TYPE TEXT"))
+            conn.commit()
+            print("Migration applied: widened novels.style to TEXT")
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE novels ALTER COLUMN target_audience TYPE TEXT"))
+            conn.commit()
+            print("Migration applied: widened novels.target_audience to TEXT")
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE novels ALTER COLUMN tone TYPE TEXT"))
+            conn.commit()
+            print("Migration applied: widened novels.tone to TEXT")
+        except Exception:
+            pass
+        # Fix: widen novel_tags.tag from VARCHAR(50)
+        try:
+            conn.execute(text("ALTER TABLE novel_tags ALTER COLUMN tag TYPE VARCHAR(200)"))
+            conn.commit()
+            print("Migration applied: widened novel_tags.tag to VARCHAR(200)")
+        except Exception:
+            pass
         # h5: reports table
         try:
             conn.execute(text('''

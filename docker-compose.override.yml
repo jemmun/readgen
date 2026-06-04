@@ -1,0 +1,22 @@
+# Override for local debugging — mounts source code into containers
+# so changes are reflected immediately without rebuilding images.
+
+services:
+  backend:
+    # Mount local backend code into /app (overrides the COPY in Dockerfile)
+    volumes:
+      - ./backend:/app
+      - ./backend/uploads:/app/uploads
+    # Enable uvicorn hot-reload for development
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # Expose port for local debugging
+    ports:
+      - "8000:8000"
+
+  frontend:
+    # For frontend debugging, use Expo dev server instead of nginx
+    # Comment out if you want the production nginx build instead
+    ports:
+      - "19000:19000"
+      - "19006:19006"
+      - "8081:8081"

@@ -9,6 +9,6 @@ class NovelTag(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     novel_id = Column(Integer, ForeignKey("novels.id", ondelete="CASCADE"), nullable=False)
-    tag = Column(String(50), nullable=False)
+    tag = Column(String(200), nullable=False)
 
     novel = relationship("Novel", back_populates="tags")
